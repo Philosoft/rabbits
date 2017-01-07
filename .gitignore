@@ -1,0 +1,12 @@
+.idea
+nbproject
+.buildpath
+.project
+.settings
+Thumbs.db
+/vendor/*
+.DS_Store
+phpunit.phar
+/phpunit.xml
+tests/_output/*
+tests/_support/_generated

@@ -1,0 +1,20 @@
+.info-form__area {
+    min-height: 200px;
+}
+.info-form-line {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.info-form__button {
+    margin-right: 10px;
+}
+.response-form__area {
+    min-height: 200px;
+}
+.response-form-line {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.response-form__button {
+    margin-right: 10px;
+}
