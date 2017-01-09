@@ -28,6 +28,11 @@ function getUrlsInformation(urls, ajaxUrl, urlsTable, processFunction)
                 if (typeof(processFunction) === 'function') {
                     processFunction(data, urls, ajaxUrl, urlsTable);
                 }
+            },
+            error: function () {
+                if (typeof(processFunction) === 'function') {
+                    processFunction(null, urls, ajaxUrl, urlsTable);
+                }
             }
         });
     }
@@ -35,13 +40,9 @@ function getUrlsInformation(urls, ajaxUrl, urlsTable, processFunction)
 
 var processResponse = function processUrlResponse(urlData, urls, ajaxUrl, urlsTable)
 {
-    if (typeof(urlData) !== 'object' || typeof(urlData.status) == 'undefined') {
-        return false;
-    }
-
     var tableBody = urlsTable.find('tbody');
     var tableRow = jQuery(document.createElement('tr')).appendTo(tableBody);
-    if (urlData.status !== 'success') {
+    if (typeof(urlData) !== 'object' || urlData.status !== 'success') {
         jQuery(document.createElement('td')).html(urlData.url).appendTo(tableRow); 
         jQuery(document.createElement('td')).html('-').appendTo(tableRow); 
         jQuery(document.createElement('td')).html('-').appendTo(tableRow); 
@@ -60,19 +61,15 @@ var processResponse = function processUrlResponse(urlData, urls, ajaxUrl, urlsTa
 
 var processInfo = function processUrlInfo(urlData, urls, ajaxUrl, urlsTable)
 {
-    if (typeof(urlData) !== 'object' || typeof(urlData.status) == 'undefined') {
-        return false;
-    }
-
     var tableBody = urlsTable.find('tbody');
     var tableRow = jQuery(document.createElement('tr')).appendTo(tableBody);
-    if (urlData.status !== 'success') {
+    if (typeof(urlData) !== 'object' || urlData.status !== 'success') {
         jQuery(document.createElement('td')).html(urlData.url).appendTo(tableRow); 
         jQuery(document.createElement('td')).html('-').appendTo(tableRow); 
         jQuery(document.createElement('td')).html('-').appendTo(tableRow); 
         jQuery(document.createElement('td')).html('-').appendTo(tableRow); 
         jQuery(document.createElement('td')).html('-').appendTo(tableRow); 
-        jQuery(document.createElement('td')).html('-').appendTo(tableRow); 
+        jQuery(document.createElement('td')).html('-').appendTo(tableRow);
     } else {
         jQuery(document.createElement('td')).html(urlData.url).appendTo(tableRow); 
         jQuery(document.createElement('td')).html(urlData.title.join('|<br/>')).appendTo(tableRow); 
@@ -80,7 +77,6 @@ var processInfo = function processUrlInfo(urlData, urls, ajaxUrl, urlsTable)
         jQuery(document.createElement('td')).html(urlData.description.join('|<br/>')).appendTo(tableRow); 
         jQuery(document.createElement('td')).html(urlData.keywords.join('|<br/>')).appendTo(tableRow); 
         jQuery(document.createElement('td')).html(urlData.canonical.join('|<br/>')).appendTo(tableRow); 
-
     }
     urls.splice(0, 1);
     getUrlsInformation(urls, ajaxUrl, urlsTable, processInfo);
