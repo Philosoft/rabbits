@@ -11,6 +11,7 @@ use GuzzleHttp\TransferStats;
 class UrlDataController extends \yii\web\Controller
 {
     protected $phpQuery = null;
+    protected $resultData = null;
 
     public function actionUrlInfo($url = '')
     {
@@ -26,7 +27,7 @@ class UrlDataController extends \yii\web\Controller
 
         $client = new Client();
         try {
-            $resultData = $client->request(
+            $this->resultData = $client->request(
                 'GET', 
                 $url,
                 [
@@ -36,20 +37,7 @@ class UrlDataController extends \yii\web\Controller
                     'decode_content' => false
                 ]
             );
-            $urlBody = $resultData->getBody()->getContents();
-            $contentType = $resultData->getHeader('content-type');
-            $textEncoding = 'UTF-8';
-            if (empty($contentType) === false && is_array($contentType) === true) {
-                preg_match("#charset=(.*)(\s|$)#isU", $contentType[0], $encoding);
-                if (is_array($encoding) === true && empty($encoding[1]) === false) {
-                    $textEncoding = $encoding[1];
-                    $isEncodingNotUtf = (strcasecmp($textEncoding, 'UTF-8') !== 0);
-                    if ($isEncodingNotUtf === true) {
-                        $urlBody = iconv($textEncoding, 'UTF-8', $urlBody);
-                        $urlBody = str_replace($textEncoding, 'UTF-8', $urlBody);
-                    }
-                }
-            }
+            $urlBody = $this->getCorrectUrlBody($this->resultData->getBody()->getContents());
 
             $this->phpQuery = \phpQuery::newDocumentHTML($urlBody);
             $urlData['title'] = $this->getContentAttr($this->phpQuery->find('title'));
@@ -80,7 +68,7 @@ class UrlDataController extends \yii\web\Controller
 
         $client = new Client();
         try {
-            $resultData = $client->request(
+            $this->resultData = $client->request(
                 'GET', 
                 $url,
                 [
@@ -90,9 +78,9 @@ class UrlDataController extends \yii\web\Controller
                 ]
             );
             $urlData['status'] = 'success';
-            $urlData['statusCode'] = $resultData->getStatusCode();
+            $urlData['statusCode'] = $this->resultData->getStatusCode();
             $urlData['redirectsNumber'] = -1;
-            $resultData = $client->request(
+            $this->resultData = $client->request(
                 'GET', 
                 $url,
                 [
@@ -105,13 +93,51 @@ class UrlDataController extends \yii\web\Controller
                     }
                 ]
             );
-            $urlData['finalStatusCode'] = $resultData->getStatusCode();
+            $urlData['finalStatusCode'] = $this->resultData->getStatusCode();
         } catch (RequestException $exception) {
             $urlData['status'] = 'error';
         }
 
         $urlData = Json::encode($urlData);
         return $urlData;
+    }
+
+    protected function getDataEncoding($urlBody)
+    {
+        $contentType = $this->resultData->getHeader('content-type');
+        $textEncoding = '';
+        if (empty($contentType) === false && is_array($contentType) === true) {
+            preg_match("#charset\s*=\s*(.*)(\s|$|\"|')#isU", $contentType[0], $encoding);
+            if (is_array($encoding) === true && empty($encoding[1]) === false) {
+                $textEncoding = trim($encoding[1]);
+            }
+        }
+
+        if (empty($textEncoding) === true) {
+            preg_match("#charset\s*=\s*\"?(.*)(\s|$|\"|')#isU", $urlBody, $encoding);
+            if (is_array($encoding) === true && empty($encoding[1]) === false) {
+                $textEncoding = trim($encoding[1]);
+            }
+        }
+
+        if (empty($textEncoding) === true) {
+            $textEncoding = 'UTF-8';
+        }
+
+        return $textEncoding;
+    }
+
+    protected function getCorrectUrlBody($urlBody)
+    {
+        $textEncoding = $this->getDataEncoding($urlBody);
+        $isEncodingNotUtf = (strcasecmp($textEncoding, 'UTF-8') !== 0);
+
+        if ($isEncodingNotUtf === true) {
+            $urlBody = iconv($textEncoding, 'UTF-8', $urlBody);
+            $urlBody = str_replace($textEncoding, 'UTF-8', $urlBody);
+        }
+
+        return $urlBody;
     }
 
     protected function getContentAttr($attrArray) 
