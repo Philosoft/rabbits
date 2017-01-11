@@ -31,6 +31,14 @@ if (empty($mainButtonHeader)) {
                 ]
             ) 
         ?>
+        <div class="progress <?= $dataName ?>-progress">
+            <div 
+                class="progress-bar progress-bar-striped <?= $dataName ?>-progress-bar active js-progress-bar" 
+                role="progressbar" 
+                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <span class="js-progress-bar-label"></span>
+            </div>
+        </div>        
         <div class="<?= $dataName ?>-form-line">
             <?= 
                 Html::submitButton(

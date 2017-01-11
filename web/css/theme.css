@@ -18,3 +18,11 @@
 .response-form__button {
     margin-right: 10px;
 }
+.info-progress {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.response-progress {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
