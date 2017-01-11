@@ -120,7 +120,14 @@ class SiteController extends Controller
      */
     public function actionUrlInfo()
     {
-        return $this->render('url-info');
+        return $this->render(
+            'url-info',
+            [
+                'dataName' => 'info',
+                'tableHeader' => ['URL', 'Title', 'H1', 'Description', 'Keywords', 'Canonical'],
+                'mainButtonHeader' => 'Check info'
+            ]
+        );
     }
 
     /**
@@ -130,6 +137,14 @@ class SiteController extends Controller
      */
     public function actionUrlResponse()
     {
-        return $this->render('url-response');
+        return $this->render(
+            'url-info',
+            [
+                'dataName' => 'response',
+                'tableHeader' => ['URL', 'Response', 'Number of redirects', 'Final address', 'Final response'],
+                'mainButtonHeader' => 'Check response'
+            ]
+        );
+
     }
 }

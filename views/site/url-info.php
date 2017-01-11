@@ -6,26 +6,38 @@ use yii\helpers\Html;
 
 $this->title = Yii::t('app', 'Url info');
 $this->params['breadcrumbs'][] = $this->title;
+
+if (empty($dataName) === true) {
+    $dataName = 'info';
+}
+
+if (empty($tableHeader) === true) {
+    $tableHeader = ['Url', 'Title', 'H1', 'Description', 'Keywords', 'Canonical'];
+}
+
+if (empty($mainButtonHeader)) {
+    $mainButtonHeader = 'Check info';
+}
 ?>
 <div class="page-content">
     <h1><?= Html::encode($this->title) ?></h1>
-    <div class="info-form js-form-container">
+    <div class="<?= $dataName ?>-form js-form-container">
         <?= 
             Html::textarea(
-                'info-form-area',
+                "{$dataName}-form-area",
                 '',
                 [
-                    'class' => 'form-control info-form__area js-form-area'
+                    'class' => "form-control {$dataName}-form__area js-form-area"
                 ]
             ) 
         ?>
-        <div class="info-form-line">
+        <div class="<?= $dataName ?>-form-line">
             <?= 
                 Html::submitButton(
-                    Yii::t('app', 'Check info'),
+                    Yii::t('app', $mainButtonHeader),
                     [
-                        'class' => 'btn btn-primary info-form__button js-info-get',
-                        'id' => 'info-form-button'
+                        'class' => "btn btn-primary {$dataName}-form__button js-{$dataName}-get",
+                        'id' => "{$dataName}-form-button"
                     ]
                 ) 
             ?>
@@ -33,7 +45,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 Html::button(
                     Yii::t('app', 'Clear form'),
                     [
-                        'class' => 'btn info-form__button js-clear-form',
+                        'class' => "btn {$dataName}-form__button js-clear-form",
                     ]
                 ) 
             ?>
@@ -41,7 +53,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 Html::button(
                     Yii::t('app', 'Delete copy'),
                     [
-                        'class' => 'btn info-form__button js-check-form',
+                        'class' => "btn {$dataName}-form__button js-check-form",
                     ]
                 ) 
             ?>
@@ -49,22 +61,19 @@ $this->params['breadcrumbs'][] = $this->title;
                 Html::button(
                     Yii::t('app', 'CSV export'),
                     [
-                        'class' => 'btn btn-inverse btn-success info-form__button js-export-form',
+                        'class' => "btn btn-inverse btn-success {$dataName}-form__button js-export-form",
                     ]
                 ) 
             ?>
         </div>
 
-        <div class="info-form-table__container">
-            <table class="info-form-table js-form-table table table-striped table-hover">
+        <div class="<?= $dataName ?>-form-table__container">
+            <table class="<?= $dataName ?>-form-table js-form-table table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>URL</th>
-                        <th>Title</th>
-                        <th>H1</th>
-                        <th>Description</th>
-                        <th>Keywords</th>
-                        <th>Canonical</th>
+                        <?php foreach ($tableHeader as $thName):?>
+                            <th><?= Yii::t('app', $thName) ?></th>
+                        <?php endforeach; ?>
                     </tr>
                 </thead>
                 <tbody>
