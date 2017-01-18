@@ -34,7 +34,8 @@ class UrlDataController extends \yii\web\Controller
                     'allow_redirects' => true,
                     'http_errors' => false,
                     'timeout' => 5,
-                    'decode_content' => false
+                    'verify' => false,
+                    'decode_content' => false,
                 ]
             );
             $urlBody = $this->getCorrectUrlBody($this->resultData->getBody()->getContents());
@@ -75,6 +76,7 @@ class UrlDataController extends \yii\web\Controller
                     'allow_redirects' => false,
                     'http_errors' => false,
                     'timeout' => 5,
+                    'verify' => false,
                 ]
             );
             $urlData['status'] = 'success';
@@ -87,6 +89,7 @@ class UrlDataController extends \yii\web\Controller
                     'allow_redirects' => true,
                     'http_errors' => false,
                     'timeout' => 5,
+                    'verify' => false,
                     'on_stats' => function (TransferStats $stats) use (&$urlData) {
                         $urlData['finalUri'] = (string) $stats->getEffectiveUri();
                         $urlData['redirectsNumber']++;
