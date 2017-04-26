@@ -30,4 +30,5 @@ return [
     'Number of redirects' => 'Количество редиректов',
     'Final address' => 'Конечный адрес назначения',
     'Final response' => 'Конечный отклик',
+    'Sitemap check' => 'Проверка карты сайта'
 ];
