@@ -1,0 +1,28 @@
+{
+  "name": "rabbits",
+  "version": "1.0.0",
+  "description": "Кролики - это не только ценный мех.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "loaders.css": "^0.1.2"
+  },
+  "devDependencies": {
+    "loaders.css": "^0.1.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Philosoft/rabbits.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Philosoft/rabbits/issues"
+  },
+  "homepage": "https://github.com/Philosoft/rabbits#readme"
+}

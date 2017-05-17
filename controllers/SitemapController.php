@@ -7,7 +7,6 @@ use Yii;
 
 class SitemapController extends Controller
 {
-
     public $enableCSRFValidation = false;
 
     public function actionCheck()
@@ -15,8 +14,9 @@ class SitemapController extends Controller
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $domain = Yii::$app->request->post("domain", null);
         if ($domain !== null) {
-            $parser = new \RobotsTxtParser(file_get_contents("{$domain}/robots.txt"));
-            $sitemap = new \SimpleXMLElement(file_get_contents("{$domain}/sitemap.xml"));
+            $url = $this->normalizeUrl($domain);
+            $parser = new \RobotsTxtParser(file_get_contents("{$url}robots.txt"));
+            $sitemap = new \SimpleXMLElement(file_get_contents("{$url}sitemap.xml"));
             $disallowed = [];
             foreach ($sitemap as $location) {
                 if ($parser->isDisallowed($location->loc)) {
@@ -42,5 +42,15 @@ class SitemapController extends Controller
         if (empty($url)) {
             return false;
         }
+    }
+
+    private function normalizeUrl($url = "")
+    {
+        $parts = parse_url($url);
+        $host = !empty($parts["host"]) ? $parts["host"] : "";
+        $scheme = !empty($parts["scheme"]) ? $parts["scheme"] : "http";
+        $path = !empty($parts["path"]) ? "{$parts["path"]}" : "";
+
+        return "{$scheme}://{$host}{$path}/";
     }
 }
