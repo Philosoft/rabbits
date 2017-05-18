@@ -73,18 +73,26 @@ $("#check-sitemap-form").submit(function (e) {
     })
     .done(function (response) {
         let table = "";
-        if (response.message.length > 0) {
-            table += "<tr><td class=\"bg-error\">" + response.message + "</td></tr>";
+        let firstRowClass = "bg-success";
+        let firstRowContent = "";
+
+        if (response.status == "ok") {
+            firstRowContent = "Parsing is successful";
+        } else if (response.message.length > 0) {
+            firstRowClass = "bg-danger";
+            firstRowContent = response.message;
+        } else {
+            firstRowClass = "bg-danger";
+            firstRowContent = "Что-то пошло не так";
         }
+        
+        table += "<tr><td class=\"" + firstRowClass + "\">" + firstRowContent + "</td></tr>";
+
         if (response.data.length > 0) {
-            table += "<tr><td class=\"bg-warning\">This urls are dissalowed by robots.txt</td></tr>";
-            data.forEach(function (url) {
+            table += "<tr><td class=\"bg-warning\">These urls are dissalowed by robots.txt</td></tr>";
+            response.data.forEach(function (url) {
                 table += "<tr><td>" + url + "</td></tr>";
             });
-        } else if (response.status == "ok") {
-            table = "<tr><td class=\"bg-success\">There is nothing wrong with this sitemap</td></tr>";
-        } else {
-            table = "<tr><td class=\"bg-danger\">" + response.message + "</td></tr>";
         }
         
         $("#result-table").html(table);
