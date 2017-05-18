@@ -71,21 +71,27 @@ $("#check-sitemap-form").submit(function (e) {
         "url": "/sitemap/check",
         "data": $(this).serialize()
     })
-    .done(function (data) {
+    .done(function (response) {
         let table = "";
-        if (data.length > 0) {
+        if (response.message.length > 0) {
+            table += "<tr><td class=\"bg-error\">" + response.message + "</td></tr>";
+        }
+        if (response.data.length > 0) {
             table += "<tr><td class=\"bg-warning\">This urls are dissalowed by robots.txt</td></tr>";
             data.forEach(function (url) {
                 table += "<tr><td>" + url + "</td></tr>";
             });
-        } else {
+        } else if (response.status == "ok") {
             table = "<tr><td class=\"bg-success\">There is nothing wrong with this sitemap</td></tr>";
+        } else {
+            table = "<tr><td class=\"bg-danger\">" + response.message + "</td></tr>";
         }
         
         $("#result-table").html(table);
     })
-    .always(function () {
+    .always(function (response) {
         $(".backdrop").hide();
+        $("#tesult-table").html("<tr><td class=\"bg-danger\">" + response.message + "</td></tr>");
     });
 });
 EOS
