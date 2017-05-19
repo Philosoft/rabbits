@@ -147,4 +147,9 @@ class SiteController extends Controller
         );
 
     }
+
+    public function actionSitemapCheck()
+    {
+        return $this->render("sitemap-check");
+    }
 }
