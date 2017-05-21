@@ -4,11 +4,13 @@
  * @var \yii\web\View $this
  */
 
+use app\controllers\SitemapController;
 use \yii\helpers\Html;
 
 $this->title = Yii::t("app", "Sitemap check");
 $this->params["breadcrumbs"][] = $this->title;
 \app\assets\LoadersAsset::register($this);
+$domain = Yii::$app->request->get("domain", "");
 ?>
 
 <h1><?= Html::encode($this->title) ?></h1>
@@ -16,7 +18,7 @@ $this->params["breadcrumbs"][] = $this->title;
 <form class="form-inline" id="check-sitemap-form">
   <div class="form-group">
     <label for="domain">Domain:</label>
-    <input type="text" class="form-control" name="domain" id="domain" placeholder="https://example.com" value="http://techbox.one">
+    <input type="text" class="form-control" name="domain" id="domain" placeholder="https://example.com" value="<?= $domain ?>">
   </div>
   <button id="check-sitemap" type="submit" class="btn btn-default">Check</button>
 </form>
@@ -36,32 +38,24 @@ $this->params["breadcrumbs"][] = $this->title;
     </div>
 </div>
 
-<style>
-    .backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 100;
-        background-color: rgba(51, 51, 51, 0.7);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    .loader {
-        width: 5rem;
-        height: 5rem;
-        margin: 0 auto;
-        display: flex;
-        justify-content: center;
-    }
-</style>
-
 <?php
+$reasonRobots = SitemapController::REASON_ROBOTS;
+$reasonMetaRobots = SitemapController::REASON_META_ROBOTS;
+$reasonNot200 = SitemapController::REASON_NOT_200;
 $this->registerJs(<<<EOS
 var megaInterval = undefined;
+
+function printReason(reason) {
+    var reasons = {
+        $reasonRobots: "robots.txt",
+        $reasonMetaRobots: "meta robots",
+        $reasonNot200: "response was not 200"
+    };
+
+    if (reasons[reason] != undefined) {
+        return reasons[reason];
+    }
+}
 
 $("#check-sitemap-form").submit(function (e) {
     e.preventDefault();
@@ -86,20 +80,24 @@ $("#check-sitemap-form").submit(function (e) {
             firstRowContent = "Что-то пошло не так";
         }
         
-        table += "<tr><td class=\"" + firstRowClass + "\">" + firstRowContent + "</td></tr>";
+        table += '<tr><td colspan="2" class="' + firstRowClass + '">'
+                    + firstRowContent +
+                '</td></tr>';
 
         if (response.data.length > 0) {
-            table += "<tr><td class=\"bg-warning\">These urls are dissalowed by robots.txt</td></tr>";
+            table += '<tr><td colspan="2" class="bg-warning">These urls are dissalowed</td></tr><tr><th>url</th><th>reason</th></tr>';
             response.data.forEach(function (url) {
-                table += "<tr><td>" + url + "</td></tr>";
+                table += "<tr><td>" + url.url + "</td><td>" + printReason(url.reason) + "</td></tr>";
             });
+        } else {
+            table += '<tr><td colspan="2" class="bg-info">В карте сайта нет запрещённых урлов</td></tr>';
         }
         
         $("#result-table").html(table);
     })
     .always(function (response) {
         $(".backdrop").hide();
-        $("#tesult-table").html("<tr><td class=\"bg-danger\">" + response.message + "</td></tr>");
+        $("#tesult-table").html("<tr><td colspan=\"2\" class=\"bg-danger\">" + response.message + "</td></tr>");
     });
 });
 EOS

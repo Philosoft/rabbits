@@ -113,3 +113,24 @@ a.desc:after {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background-color: rgba(51, 51, 51, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.loader {
+    width: 5rem;
+    height: 5rem;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
