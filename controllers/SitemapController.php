@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use GuzzleHttp\Client;
 use \yii\web\Controller;
 use Yii;
 
@@ -10,34 +11,60 @@ class SitemapController extends Controller
     const STATUS_OK = "ok";
     const STATUS_ERROR = "error";
 
+    const REASON_ROBOTS = 0;
+    const REASON_META_ROBOTS = 1;
+    const REASON_NOT_200 = 2;
+
     public $enableCSRFValidation = false;
+
+    private $disallowed = [];
 
     public function actionCheck()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $domain = Yii::$app->request->post("domain", null);
-        $disallowed = [];
         $status = self::STATUS_OK;
         $message = "";
+        $guzzle = new Client();
         if ($domain !== null) {
             $url = $this->normalizeUrl($domain);
             try {
                 $parser = new \RobotsTxtParser(file_get_contents("{$url}robots.txt"));
                 $sitemap = new \SimpleXMLElement(file_get_contents("{$url}sitemap.xml"));
                 foreach ($sitemap as $location) {
-                    if ($parser->isDisallowed($location->loc)) {
-                        $disallowed[] = $location->loc;
+                    $currentUrl = trim((string)$location->loc);
+                    $response = $guzzle->request(
+                        "GET",
+                        $currentUrl,
+                        [
+                            "allow_redirects" => false
+                        ]
+                    );
+
+                    if ($response->getStatusCode() != 200) {
+                        $this->addDisallowedUrl($currentUrl, self::REASON_NOT_200);
+                    } else {
+                        $content = \phpQuery::newDocumentHTML($response->getBody()->getContents());
+                        $metaRobots = $content->find("meta[name='robots']");
+                        if (!empty($metaRobots)) {
+                            foreach ($metaRobots as $meta) {
+                                $metaContent = pq($meta)->attr("content");
+                                $metaContent = explode(",", $metaContent);
+                                $metaContent = array_map("trim", $metaContent);
+                                foreach ($metaContent as $metaValue) {
+                                    if (in_array($metaValue, ["noindex", "nofollow"])) {
+                                        $this->addDisallowedUrl($currentUrl, self::REASON_META_ROBOTS);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if ($parser->isDisallowed($currentUrl)) {
+                        $this->addDisallowedUrl($currentUrl);
                     }
                 }
 
-                if (!empty($disallowed)) {
-                    $disallowed = array_map(
-                        function ($url) {
-                            return (string)$url;
-                        },
-                        $disallowed
-                    );
-                }
             } catch (\Exception $e) {
                 $status = self::STATUS_ERROR;
                 $message = $e->getMessage();
@@ -46,7 +73,7 @@ class SitemapController extends Controller
         }
         return [
             "status" => $status,
-            "data" => $disallowed,
+            "data" => $this->disallowed,
             "message" => $message
         ];
     }
@@ -66,5 +93,13 @@ class SitemapController extends Controller
         $path = !empty($parts["path"]) ? "{$parts["path"]}" : "";
 
         return "{$scheme}://{$host}{$path}/";
+    }
+
+    private function addDisallowedUrl($url, $reason = self::REASON_ROBOTS)
+    {
+        $this->disallowed[] = [
+            "url" => $url,
+            "reason" => $reason
+        ];
     }
 }
