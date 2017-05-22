@@ -33,15 +33,20 @@ class SitemapController extends Controller
                 $sitemap = new \SimpleXMLElement(file_get_contents("{$url}sitemap.xml"));
                 foreach ($sitemap as $location) {
                     $currentUrl = trim((string)$location->loc);
-                    $response = $guzzle->request(
-                        "GET",
-                        $currentUrl,
-                        [
-                            "allow_redirects" => false
-                        ]
-                    );
+                    $guzzleClientError = false;
+                    try {
+                        $response = $guzzle->request(
+                            "GET",
+                            $currentUrl,
+                            [
+                                "allow_redirects" => false
+                            ]
+                        );
+                    } catch (\GuzzleHttp\Exception\ClientException $clientException) {
+                        $guzzleClientError = true;
+                    }
 
-                    if ($response->getStatusCode() != 200) {
+                    if ($guzzleClientError === true || $response->getStatusCode() != 200) {
                         $this->addDisallowedUrl($currentUrl, self::REASON_NOT_200);
                     } else {
                         $content = \phpQuery::newDocumentHTML($response->getBody()->getContents());
